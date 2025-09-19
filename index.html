@@ -1,0 +1,249 @@
+<!--
+FILES INCLUDED IN THIS SINGLE DOCUMENT (copy out to separate files in the same folder):
+
+1) index.html  (this file)
+2) manifest.webmanifest
+3) sw.js
+4) OPTIONAL: /icons/icon-192.png and /icons/icon-512.png (replace with your own)
+-->
+
+<!-- ============================ index.html ============================ -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QuillTabs — Offline Writing App</title>
+
+  <meta name="theme-color" content="#111827" />
+  <meta name="description" content="A minimal, offline-capable, tabbed writing app." />
+
+  <link rel="icon" href="/icons/icon-192.png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+
+  <style>
+    :root { --bg:#0f172a; --panel:#111827; --muted:#374151; --text:#e5e7eb; --accent:#38bdf8; }
+    *{ box-sizing:border-box }
+    html,body{ height:100%; }
+    body{ margin:0; font-family:system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; background:var(--bg); color:var(--text); }
+    .app{ display:grid; grid-template-columns:260px 1fr; height:100dvh; }
+    .sidebar{ background:var(--panel); border-right:1px solid #1f2937; display:flex; flex-direction:column; }
+    .brand{ padding:14px 16px; display:flex; align-items:center; gap:10px; border-bottom:1px solid #1f2937; }
+    .brand .dot{ width:10px; height:10px; border-radius:50%; background:var(--accent); }
+    .brand h1{ font-size:16px; margin:0; letter-spacing:0.3px; color:#f3f4f6 }
+
+    .tabs{ flex:1; overflow:auto; padding:8px; }
+    .tab{ display:flex; align-items:center; gap:8px; padding:10px 10px; border-radius:10px; cursor:pointer; user-select:none; }
+    .tab.active{ background:#0b1220; outline:1px solid #1f2937; }
+    .tab input{ flex:1; background:transparent; border:none; color:var(--text); font-size:14px; outline:none; }
+    .tab .del{ opacity:0.6; border:none; background:transparent; color:#9ca3af; cursor:pointer; }
+    .tab .del:hover{ color:#fca5a5; }
+    .tab .cursor-move{ cursor:link }
+
+    .side-actions{ padding:10px; border-top:1px solid #1f2937; display:grid; gap:8px; }
+    button, .ghost{ background:#0b1220; color:var(--text); border:1px solid #1f2937; border-radius:10px; padding:10px 12px; cursor:pointer; }
+    button:hover{ border-color:#374151 }
+    .ghost{ text-align:center; text-decoration:none; display:block; }
+
+    .editor{ display:flex; flex-direction:column; min-width:0; }
+    .toolbar{ display:flex; gap:8px; align-items:center; padding:10px; border-bottom:1px solid #1f2937; background:var(--panel); }
+    .toolbar .status{ margin-left:auto; font-size:12px; color:#9ca3af }
+
+    .title{ width:100%; background:transparent; border:none; color:#f3f4f6; font-size:18px; padding:12px 16px; outline:none; border-bottom:1px solid #1f2937; }
+    .content{ flex:1; width:100%; background:transparent; color:#e5e7eb; border:none; outline:none; padding:16px; font: 16px/1.6 ui-serif, Georgia, Cambria, "Times New Roman", Times, serif; resize:none; }
+
+    .install-btn{ display:none }
+
+    @media (max-width:900px){ .app{ grid-template-columns:1fr } .sidebar{ position:fixed; inset:0 50% 0 0; z-index:10; transform:translateX(-100%); transition:transform .25s ease; max-width:420px; } .sidebar.open{ transform:translateX(0) } .toolbar .hamburger{ display:inline-flex } }
+    @media (min-width:901px){ .toolbar .hamburger{ display:none } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><div class="dot"></div><h1>QuillTabs</h1></div>
+      <div class="tabs" id="tabs"></div>
+      <div class="side-actions">
+        <button id="newTabBtn">+ New Tab</button>
+        <button id="exportBtn">Export .qtabs</button>
+        <input id="importInput" type="file" accept="application/json,.qtabs" style="display:none" />
+        <button id="importBtn">Import .qtabs</button>
+        <a class="ghost" href="https://" target="_blank" rel="noreferrer" id="helpLink">Help</a>
+      </div>
+    </aside>
+
+    <main class="editor">
+      <div class="toolbar">
+        <button class="hamburger" id="menuBtn">☰</button>
+        <button id="installBtn" class="install-btn">Install App</button>
+        <span class="status" id="status">Saved</span>
+      </div>
+      <input id="title" class="title" placeholder="Untitled…" />
+      <textarea id="content" class="content" placeholder="Start writing…"></textarea>
+    </main>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'quilltabs.v1';
+    const uid = () => Math.random().toString(36).slice(2, 10);
+
+    const Store = {
+      load(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { tabs:[], active:null } }catch{ return { tabs:[], active:null } } },
+      save(data){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)) }
+    };
+
+    let state = Store.load();
+    if(!state.tabs.length){
+      const id = uid();
+      state = { tabs:[{ id, name:'First Note', title:'Welcome', content:'This works offline. Create more tabs from the left. ✨', ctime:Date.now(), mtime:Date.now() }], active:id };
+      Store.save(state);
+    }
+
+    const el = {
+      sidebar: document.getElementById('sidebar'),
+      tabs: document.getElementById('tabs'),
+      newTabBtn: document.getElementById('newTabBtn'),
+      title: document.getElementById('title'),
+      content: document.getElementById('content'),
+      status: document.getElementById('status'),
+      exportBtn: document.getElementById('exportBtn'),
+      importBtn: document.getElementById('importBtn'),
+      importInput: document.getElementById('importInput'),
+      menuBtn: document.getElementById('menuBtn'),
+      installBtn: document.getElementById('installBtn'),
+    };
+
+    // function renderTabs(){
+    //   el.tabs.innerHTML = '';
+    //   state.tabs.forEach(t => {
+    //     const row = document.createElement('div');
+    //     row.className = 'tab' + (t.id === state.active ? ' active' : '');
+    //     row.onclick = (e)=>{ if(e.target.closest('.del') || e.target.tagName==='INPUT') return; selectTab(t.id) };
+
+    //     const name = document.createElement('input');
+    //     name.value = t.name || 'Untitled';
+    //     name.oninput = ()=>{ t.name = name.value; t.mtime = Date.now(); Store.save(state) };
+
+    //     const del = document.createElement('button');
+    //     del.className = 'del'; del.title = 'Delete'; del.textContent = '✕';
+    //     del.onclick = (e)=>{ e.stopPropagation(); deleteTab(t.id) };
+
+    //     row.appendChild(name);
+    //     row.appendChild(del);
+    //     el.tabs.appendChild(row);
+    //   });
+    // }
+
+    function renderTabs(){
+  el.tabs.innerHTML = '';
+  state.tabs.forEach(t => {
+    const row = document.createElement('div');
+    row.className = 'tab' + (t.id === state.active ? ' active' : '');
+    row.onclick = (e)=>{ if(e.target.closest('.del') || e.target.tagName==='BUTTON') return; selectTab(t.id) };
+
+    // Replace input with button, sync text with title
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.style.flex = '1';
+    btn.style.background = 'transparent';
+    btn.style.border = 'none';
+    btn.style.color = 'inherit';
+    btn.style.fontSize = '14px';
+    btn.style.textAlign = 'left';
+    btn.style.cursor = 'pointer';
+    btn.textContent = t.title || 'Untitled';
+    btn.onclick = (e) => { e.stopPropagation(); selectTab(t.id); };
+
+    const del = document.createElement('button');
+    del.className = 'del'; del.title = 'Delete'; del.textContent = '✕';
+    del.onclick = (e)=>{ e.stopPropagation(); deleteTab(t.id) };
+
+    row.appendChild(btn);
+    row.appendChild(del);
+    el.tabs.appendChild(row);
+  });
+}
+
+    function renderEditor(){
+      const t = state.tabs.find(x => x.id === state.active);
+      if(!t) return;
+      el.title.value = t.title || '';
+      el.content.value = t.content || '';
+      saveStatus('Saved');
+    }
+
+    function selectTab(id){ state.active = id; Store.save(state); renderTabs(); renderEditor(); closeMenu() }
+
+    function newTab(){
+      const id = uid();
+      state.tabs.unshift({ id, name:'New Tab', title:'', content:'', ctime:Date.now(), mtime:Date.now() });
+      state.active = id; Store.save(state); renderTabs(); renderEditor();
+    }
+
+    function deleteTab(id){
+      if(!confirm('Delete this tab?')) return;
+      const idx = state.tabs.findIndex(t=>t.id===id);
+      if(idx>-1) state.tabs.splice(idx,1);
+      if(!state.tabs.length) return newTab();
+      if(state.active===id) state.active = state.tabs[0].id;
+      Store.save(state); renderTabs(); renderEditor();
+    }
+
+    function saveStatus(text){ el.status.textContent = text; el.status.style.opacity = 1; clearTimeout(saveStatus._t); saveStatus._t = setTimeout(()=> el.status.style.opacity = 0.6, 600) }
+
+    function persist(){ Store.save(state); saveStatus('Saved') }
+    const debounced = (fn,ms)=>{ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms) } };
+    const persistDebounced = debounced(persist, 400);
+
+    el.title.addEventListener('input', ()=>{ const t = current(); t.title = el.title.value; t.mtime=Date.now(); saveStatus('Saving…'); persistDebounced(); });
+    el.content.addEventListener('input', ()=>{ const t = current(); t.content = el.content.value; t.mtime=Date.now(); saveStatus('Saving…'); persistDebounced(); });
+
+    function current(){ return state.tabs.find(x=>x.id===state.active) }
+
+    el.exportBtn.onclick = ()=>{
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type:'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = 'quilltabs.qtabs'; a.click(); URL.revokeObjectURL(a.href);
+    };
+    el.importBtn.onclick = ()=> el.importInput.click();
+    el.importInput.onchange = async (e)=>{
+      const file = e.target.files[0]; if(!file) return; const json = JSON.parse(await file.text());
+      if(!json || !Array.isArray(json.tabs)) return alert('Invalid file');
+      state = json; Store.save(state); renderTabs(); renderEditor();
+    };
+
+    el.newTabBtn.onclick = ()=> newTab();
+
+    el.menuBtn.onclick = ()=>{ el.sidebar.classList.toggle('open'); };
+    function closeMenu(){ el.sidebar.classList.remove('open') }
+
+    renderTabs(); renderEditor();
+
+    if('serviceWorker' in navigator){
+      window.addEventListener('load', ()=>{
+        navigator.serviceWorker.register('./sw.js').catch(console.error);
+      });
+    }
+
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e)=>{
+      e.preventDefault();
+      deferredPrompt = e;
+      el.installBtn.style.display = 'inline-flex';
+    });
+    el.installBtn.addEventListener('click', async ()=>{
+      if(!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      el.installBtn.style.display = 'none';
+    });
+
+    function setOnline(v){ document.body.style.outline = v? 'none' : '2px dashed #f59e0b' }
+    addEventListener('online', ()=>setOnline(true));
+    addEventListener('offline', ()=>setOnline(false));
+    setOnline(navigator.onLine);
+  </script>
+</body>
+</html>
