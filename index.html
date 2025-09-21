@@ -10,240 +10,572 @@ FILES INCLUDED IN THIS SINGLE DOCUMENT (copy out to separate files in the same f
 <!-- ============================ index.html ============================ -->
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>QuillTabs — Offline Writing App</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>QuillTabs — Offline Writing App</title>
 
-  <meta name="theme-color" content="#111827" />
-  <meta name="description" content="A minimal, offline-capable, tabbed writing app." />
+    <meta name="theme-color" content="#111827" />
+    <meta
+      name="description"
+      content="A minimal, offline-capable, tabbed writing app."
+    />
 
-  <link rel="icon" href="/icons/icon-192.png" sizes="192x192" />
-  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
-  <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="/icons/icon-192.png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <link rel="manifest" href="./manifest.webmanifest" />
 
-  <style>
-    :root { --bg:#0f172a; --panel:#111827; --muted:#374151; --text:#e5e7eb; --accent:#38bdf8; }
-    *{ box-sizing:border-box }
-    html,body{ height:100%; }
-    body{ margin:0; font-family:system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; background:var(--bg); color:var(--text); }
-    .app{ display:grid; grid-template-columns:260px 1fr; height:100dvh; }
-    .sidebar{ background:var(--panel); border-right:1px solid #1f2937; display:flex; flex-direction:column; }
-    .brand{ padding:14px 16px; display:flex; align-items:center; gap:10px; border-bottom:1px solid #1f2937; }
-    .brand .dot{ width:10px; height:10px; border-radius:50%; background:var(--accent); }
-    .brand h1{ font-size:16px; margin:0; letter-spacing:0.3px; color:#f3f4f6 }
+    <style>
+      :root {
+        --bg: #0f172a;
+        --panel: #111827;
+        --muted: #374151;
+        --text: #e5e7eb;
+        --accent: #38bdf8;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
+          Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        background: var(--bg);
+        color: var(--text);
+      }
+      .app {
+        display: grid;
+        grid-template-columns: 260px 1fr;
+        height: 100dvh;
+      }
+      .sidebar {
+        background: var(--panel);
+        border-right: 1px solid #1f2937;
+        display: flex;
+        flex-direction: column;
+      }
+      .brand {
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-bottom: 1px solid #1f2937;
+      }
+      .brand .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+      .brand h1 {
+        font-size: 16px;
+        margin: 0;
+        letter-spacing: 0.3px;
+        color: #f3f4f6;
+      }
 
-    .tabs{ flex:1; overflow:auto; padding:8px; }
-    .tab{ display:flex; align-items:center; gap:8px; padding:10px 10px; border-radius:10px; cursor:pointer; user-select:none; }
-    .tab.active{ background:#0b1220; outline:1px solid #1f2937; }
-    .tab input{ flex:1; background:transparent; border:none; color:var(--text); font-size:14px; outline:none; }
-    .tab .del{ opacity:0.6; border:none; background:transparent; color:#9ca3af; cursor:pointer; }
-    .tab .del:hover{ color:#fca5a5; }
-    .tab .cursor-move{ cursor:link }
+      .tabs {
+        flex: 1;
+        overflow: auto;
+        padding: 8px;
+      }
+      .tab {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 10px;
+        border-radius: 10px;
+        cursor: pointer;
+        user-select: none;
+      }
+      .tab.active {
+        background: #0b1220;
+        outline: 1px solid #1f2937;
+      }
+      .tab input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        color: var(--text);
+        font-size: 14px;
+        outline: none;
+      }
+      .tab .del {
+        opacity: 0.6;
+        border: none;
+        background: transparent;
+        color: #9ca3af;
+        cursor: pointer;
+      }
+      .tab .del:hover {
+        color: #fca5a5;
+      }
+      .tab .cursor-move {
+        cursor: link;
+      }
 
-    .side-actions{ padding:10px; border-top:1px solid #1f2937; display:grid; gap:8px; }
-    button, .ghost{ background:#0b1220; color:var(--text); border:1px solid #1f2937; border-radius:10px; padding:10px 12px; cursor:pointer; }
-    button:hover{ border-color:#374151 }
-    .ghost{ text-align:center; text-decoration:none; display:block; }
+      .side-actions {
+        padding: 10px;
+        border-top: 1px solid #1f2937;
+        display: grid;
+        gap: 8px;
+      }
+      button,
+      .ghost {
+        background: #0b1220;
+        color: var(--text);
+        border: 1px solid #1f2937;
+        border-radius: 10px;
+        padding: 10px 12px;
+        cursor: pointer;
+      }
+      button:hover {
+        border-color: #374151;
+      }
+      .ghost {
+        text-align: center;
+        text-decoration: none;
+        display: block;
+      }
 
-    .editor{ display:flex; flex-direction:column; min-width:0; }
-    .toolbar{ display:flex; gap:8px; align-items:center; padding:10px; border-bottom:1px solid #1f2937; background:var(--panel); }
-    .toolbar .status{ margin-left:auto; font-size:12px; color:#9ca3af }
+      .editor {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+      .toolbar {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        padding: 10px;
+        border-bottom: 1px solid #1f2937;
+        background: var(--panel);
+      }
+      .toolbar .status {
+        margin-left: auto;
+        font-size: 12px;
+        color: #9ca3af;
+      }
 
-    .title{ width:100%; background:transparent; border:none; color:#f3f4f6; font-size:18px; padding:12px 16px; outline:none; border-bottom:1px solid #1f2937; }
-    .content{ flex:1; width:100%; background:transparent; color:#e5e7eb; border:none; outline:none; padding:16px; font: 16px/1.6 ui-serif, Georgia, Cambria, "Times New Roman", Times, serif; resize:none; }
+      .title {
+        width: 100%;
+        background: transparent;
+        border: none;
+        color: #f3f4f6;
+        font-size: 18px;
+        padding: 12px 16px;
+        outline: none;
+        border-bottom: 1px solid #1f2937;
+      }
+      .content {
+        flex: 1;
+        width: 100%;
+        background: transparent;
+        color: #e5e7eb;
+        border: none;
+        outline: none;
+        padding: 16px;
+        font: 16px/1.6 ui-serif, Georgia, Cambria, "Times New Roman", Times,
+          serif;
+        resize: none;
+      }
 
-    .install-btn{ display:none }
+      .install-btn {
+        display: none;
+      }
 
-    @media (max-width:900px){ .app{ grid-template-columns:1fr } .sidebar{ position:fixed; inset:0 50% 0 0; z-index:10; transform:translateX(-100%); transition:transform .25s ease; max-width:420px; } .sidebar.open{ transform:translateX(0) } .toolbar .hamburger{ display:inline-flex } }
-    @media (min-width:901px){ .toolbar .hamburger{ display:none } }
-  </style>
-</head>
-<body>
-  <div class="app">
-    <aside class="sidebar" id="sidebar">
-      <div class="brand"><div class="dot"></div><h1>QuillTabs</h1></div>
-      <div class="tabs" id="tabs"></div>
-      <div class="side-actions">
-        <button id="newTabBtn">+ New Tab</button>
-        <button id="exportBtn">Export .qtabs</button>
-        <input id="importInput" type="file" accept="application/json,.qtabs" style="display:none" />
-        <button id="importBtn">Import .qtabs</button>
-        <a class="ghost" href="https://" target="_blank" rel="noreferrer" id="helpLink">Help</a>
-      </div>
-    </aside>
+      @media (max-width: 900px) {
+        .app {
+          grid-template-columns: 1fr;
+        }
+        .sidebar {
+          position: fixed;
+          inset: 0 50% 0 0;
+          z-index: 10;
+          transform: translateX(-100%);
+          transition: transform 0.25s ease;
+          max-width: 420px;
+        }
+        .sidebar.open {
+          transform: translateX(0);
+        }
+        .toolbar .hamburger {
+          display: inline-flex;
+        }
+      }
+      @media (min-width: 901px) {
+        .toolbar .hamburger {
+          display: none;
+        }
+      }
 
-    <main class="editor">
-      <div class="toolbar">
-        <button class="hamburger" id="menuBtn">☰</button>
-        <button id="installBtn" class="install-btn">Install App</button>
-        <span class="status" id="status">Saved</span>
-      </div>
-      <input id="title" class="title" placeholder="Untitled…" />
-      <textarea id="content" class="content" placeholder="Start writing…"></textarea>
-    </main>
-  </div>
+/* Start https://www.cursors-4u.com */ * {cursor: url(https://cur.cursors-4u.net/cursors/cur-2/cur116.cur), auto !important;} /* End https://www.cursors-4u.com */
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand">
+          <div class="dot"></div>
+          <h1>QuillTabs</h1>
+        </div>
+        <div class="tabs" id="tabs"></div>
+        <div class="side-actions">
+          <button id="newTabBtn">+ New Tab</button>
+          <button id="exportBtn">Export .qtabs</button>
+          <input
+            id="importInput"
+            type="file"
+            accept="application/json,.qtabs"
+            style="display: none"
+          />
+          <button id="importBtn">Import .qtabs</button>
+          <a
+            class="ghost"
+            href="https://"
+            target="_blank"
+            rel="noreferrer"
+            id="helpLink"
+            >Help</a
+          >
+        </div>
+      </aside>
 
-  <script>
-    const STORAGE_KEY = 'quilltabs.v1';
-    const uid = () => Math.random().toString(36).slice(2, 10);
+      <main class="editor">
+        <div class="toolbar">
+          <button class="hamburger" id="menuBtn">☰</button>
+          <button id="installBtn" class="install-btn">Install App</button>
+          <span class="status" id="status">Saved</span>
+        </div>
+        <input id="title" class="title" placeholder="Untitled…" readonly />
+        <button
+          id="editToggleBtn"
+          title="Edit"
+          style="
+            position: absolute;
+            right: 30px;
+            top: 18px;
+            font-size: 18px;
+            background: none;
+            border: none;
+            cursor: pointer;
+          "
+        >
+          ✏️
+        </button>
+        <textarea
+          id="content"
+          class="content"
+          placeholder="Start writing…"
+        ></textarea>
+      </main>
+    </div>
 
-    const Store = {
-      load(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { tabs:[], active:null } }catch{ return { tabs:[], active:null } } },
-      save(data){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)) }
-    };
+    <script>
+      const STORAGE_KEY = "quilltabs.v1";
+      const uid = () => Math.random().toString(36).slice(2, 10);
 
-    let state = Store.load();
-    if(!state.tabs.length){
-      const id = uid();
-      state = { tabs:[{ id, name:'First Note', title:'Welcome', content:'This works offline. Create more tabs from the left. ✨', ctime:Date.now(), mtime:Date.now() }], active:id };
-      Store.save(state);
-    }
+      const Store = {
+        load() {
+          try {
+            return (
+              JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
+                tabs: [],
+                active: null,
+              }
+            );
+          } catch {
+            return { tabs: [], active: null };
+          }
+        },
+        save(data) {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        },
+      };
 
-    const el = {
-      sidebar: document.getElementById('sidebar'),
-      tabs: document.getElementById('tabs'),
-      newTabBtn: document.getElementById('newTabBtn'),
-      title: document.getElementById('title'),
-      content: document.getElementById('content'),
-      status: document.getElementById('status'),
-      exportBtn: document.getElementById('exportBtn'),
-      importBtn: document.getElementById('importBtn'),
-      importInput: document.getElementById('importInput'),
-      menuBtn: document.getElementById('menuBtn'),
-      installBtn: document.getElementById('installBtn'),
-    };
+      let state = Store.load();
+      if (!state.tabs.length) {
+        const id = uid();
+        state = {
+          tabs: [
+            {
+              id,
+              name: "First Note",
+              title: "Welcome",
+              content: "This works offline. Create more tabs from the left. ✨",
+              ctime: Date.now(),
+              mtime: Date.now(),
+            },
+          ],
+          active: id,
+        };
+        Store.save(state);
+      }
 
-    // function renderTabs(){
-    //   el.tabs.innerHTML = '';
-    //   state.tabs.forEach(t => {
-    //     const row = document.createElement('div');
-    //     row.className = 'tab' + (t.id === state.active ? ' active' : '');
-    //     row.onclick = (e)=>{ if(e.target.closest('.del') || e.target.tagName==='INPUT') return; selectTab(t.id) };
+      const el = {
+        sidebar: document.getElementById("sidebar"),
+        tabs: document.getElementById("tabs"),
+        newTabBtn: document.getElementById("newTabBtn"),
+        title: document.getElementById("title"),
+        content: document.getElementById("content"),
+        status: document.getElementById("status"),
+        exportBtn: document.getElementById("exportBtn"),
+        importBtn: document.getElementById("importBtn"),
+        importInput: document.getElementById("importInput"),
+        menuBtn: document.getElementById("menuBtn"),
+        installBtn: document.getElementById("installBtn"),
+      };
 
-    //     const name = document.createElement('input');
-    //     name.value = t.name || 'Untitled';
-    //     name.oninput = ()=>{ t.name = name.value; t.mtime = Date.now(); Store.save(state) };
+      // function renderTabs(){
+      //   el.tabs.innerHTML = '';
+      //   state.tabs.forEach(t => {
+      //     const row = document.createElement('div');
+      //     row.className = 'tab' + (t.id === state.active ? ' active' : '');
+      //     row.onclick = (e)=>{ if(e.target.closest('.del') || e.target.tagName==='INPUT') return; selectTab(t.id) };
 
-    //     const del = document.createElement('button');
-    //     del.className = 'del'; del.title = 'Delete'; del.textContent = '✕';
-    //     del.onclick = (e)=>{ e.stopPropagation(); deleteTab(t.id) };
+      //     const name = document.createElement('input');
+      //     name.value = t.name || 'Untitled';
+      //     name.oninput = ()=>{ t.name = name.value; t.mtime = Date.now(); Store.save(state) };
 
-    //     row.appendChild(name);
-    //     row.appendChild(del);
-    //     el.tabs.appendChild(row);
-    //   });
-    // }
+      //     const del = document.createElement('button');
+      //     del.className = 'del'; del.title = 'Delete'; del.textContent = '✕';
+      //     del.onclick = (e)=>{ e.stopPropagation(); deleteTab(t.id) };
 
-    function renderTabs(){
-  el.tabs.innerHTML = '';
-  state.tabs.forEach(t => {
-    const row = document.createElement('div');
-    row.className = 'tab' + (t.id === state.active ? ' active' : '');
-    row.onclick = (e)=>{ if(e.target.closest('.del') || e.target.tagName==='BUTTON') return; selectTab(t.id) };
+      //     row.appendChild(name);
+      //     row.appendChild(del);
+      //     el.tabs.appendChild(row);
+      //   });
+      // }
 
-    // Replace input with button, sync text with title
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.style.flex = '1';
-    btn.style.background = 'transparent';
-    btn.style.border = 'none';
-    btn.style.color = 'inherit';
-    btn.style.fontSize = '14px';
-    btn.style.textAlign = 'left';
-    btn.style.cursor = 'pointer';
-    btn.textContent = t.title || 'Untitled';
-    btn.onclick = (e) => { e.stopPropagation(); selectTab(t.id); };
+      // ...inside your <script> tag...
 
-    const del = document.createElement('button');
-    del.className = 'del'; del.title = 'Delete'; del.textContent = '✕';
-    del.onclick = (e)=>{ e.stopPropagation(); deleteTab(t.id) };
+      function renderTabs() {
+        el.tabs.innerHTML = "";
+        state.tabs.forEach((t, idx) => {
+          const row = document.createElement("div");
+          row.className = "tab" + (t.id === state.active ? " active" : "");
+          row.draggable = true;
+          row.dataset.idx = idx;
 
-    row.appendChild(btn);
-    row.appendChild(del);
-    el.tabs.appendChild(row);
-  });
-}
+          row.ondragstart = (e) => {
+            e.dataTransfer.setData("text/plain", idx);
+            row.style.opacity = "0.5";
+          };
+          row.ondragend = () => {
+            row.style.opacity = "";
+          };
+          row.ondragover = (e) => {
+            e.preventDefault();
+            row.style.background = "#1e293b";
+          };
+          row.ondragleave = () => {
+            row.style.background = "";
+          };
+          row.ondrop = (e) => {
+            e.preventDefault();
+            row.style.background = "";
+            const fromIdx = +e.dataTransfer.getData("text/plain");
+            const toIdx = idx;
+            if (fromIdx !== toIdx) {
+              const moved = state.tabs.splice(fromIdx, 1)[0];
+              state.tabs.splice(toIdx, 0, moved);
+              Store.save(state);
+              renderTabs();
+            }
+          };
 
-    function renderEditor(){
-      const t = state.tabs.find(x => x.id === state.active);
-      if(!t) return;
-      el.title.value = t.title || '';
-      el.content.value = t.content || '';
-      saveStatus('Saved');
-    }
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.style.flex = "1";
+          btn.style.background = "transparent";
+          btn.style.border = "none";
+          btn.style.color = "inherit";
+          btn.style.fontSize = "14px";
+          btn.style.textAlign = "left";
+          btn.style.cursor = "pointer";
+          btn.textContent = t.title || "Untitled";
+          btn.onclick = (e) => {
+            e.stopPropagation();
+            selectTab(t.id);
+          };
 
-    function selectTab(id){ state.active = id; Store.save(state); renderTabs(); renderEditor(); closeMenu() }
+          const del = document.createElement("button");
+          del.className = "del";
+          del.title = "Delete";
+          del.textContent = "✕";
+          del.onclick = (e) => {
+            e.stopPropagation();
+            deleteTab(t.id);
+          };
 
-    function newTab(){
-      const id = uid();
-      state.tabs.unshift({ id, name:'New Tab', title:'', content:'', ctime:Date.now(), mtime:Date.now() });
-      state.active = id; Store.save(state); renderTabs(); renderEditor();
-    }
+          row.appendChild(btn);
+          row.appendChild(del);
+          el.tabs.appendChild(row);
+        });
+      }
 
-    function deleteTab(id){
-      if(!confirm('Delete this tab?')) return;
-      const idx = state.tabs.findIndex(t=>t.id===id);
-      if(idx>-1) state.tabs.splice(idx,1);
-      if(!state.tabs.length) return newTab();
-      if(state.active===id) state.active = state.tabs[0].id;
-      Store.save(state); renderTabs(); renderEditor();
-    }
+      let editMode = false;
 
-    function saveStatus(text){ el.status.textContent = text; el.status.style.opacity = 1; clearTimeout(saveStatus._t); saveStatus._t = setTimeout(()=> el.status.style.opacity = 0.6, 600) }
+      function renderEditor() {
+        const t = state.tabs.find((x) => x.id === state.active);
+        if (!t) return;
+        el.title.value = t.title || "";
+        el.content.value = t.content || "";
+        el.title.readOnly = !editMode;
+        el.content.readOnly = !editMode;
+        el.content.style.background = editMode ? "" : "transparent";
+        el.title.style.background = editMode ? "" : "transparent";
+        el.editToggleBtn.innerText = editMode ? "✅" : "✏️";
+        saveStatus("Saved");
+      }
 
-    function persist(){ Store.save(state); saveStatus('Saved') }
-    const debounced = (fn,ms)=>{ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms) } };
-    const persistDebounced = debounced(persist, 400);
+      el.editToggleBtn = document.getElementById("editToggleBtn");
+      el.editToggleBtn.onclick = () => {
+        editMode = !editMode;
+        renderEditor();
+      };
 
-    el.title.addEventListener('input', ()=>{ const t = current(); t.title = el.title.value; t.mtime=Date.now(); saveStatus('Saving…'); persistDebounced(); });
-    el.content.addEventListener('input', ()=>{ const t = current(); t.content = el.content.value; t.mtime=Date.now(); saveStatus('Saving…'); persistDebounced(); });
+      function selectTab(id) {
+        state.active = id;
+        Store.save(state);
+        renderTabs();
+        renderEditor();
+        closeMenu();
+      }
 
-    function current(){ return state.tabs.find(x=>x.id===state.active) }
+      function newTab() {
+        const id = uid();
+        state.tabs.unshift({
+          id,
+          name: "New Tab",
+          title: "",
+          content: "",
+          ctime: Date.now(),
+          mtime: Date.now(),
+        });
+        state.active = id;
+        Store.save(state);
+        renderTabs();
+        renderEditor();
+      }
 
-    el.exportBtn.onclick = ()=>{
-      const blob = new Blob([JSON.stringify(state, null, 2)], { type:'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob); a.download = 'quilltabs.qtabs'; a.click(); URL.revokeObjectURL(a.href);
-    };
-    el.importBtn.onclick = ()=> el.importInput.click();
-    el.importInput.onchange = async (e)=>{
-      const file = e.target.files[0]; if(!file) return; const json = JSON.parse(await file.text());
-      if(!json || !Array.isArray(json.tabs)) return alert('Invalid file');
-      state = json; Store.save(state); renderTabs(); renderEditor();
-    };
+      function deleteTab(id) {
+        if (!confirm("Delete this tab?")) return;
+        const idx = state.tabs.findIndex((t) => t.id === id);
+        if (idx > -1) state.tabs.splice(idx, 1);
+        if (!state.tabs.length) return newTab();
+        if (state.active === id) state.active = state.tabs[0].id;
+        Store.save(state);
+        renderTabs();
+        renderEditor();
+      }
 
-    el.newTabBtn.onclick = ()=> newTab();
+      function saveStatus(text) {
+        el.status.textContent = text;
+        el.status.style.opacity = 1;
+        clearTimeout(saveStatus._t);
+        saveStatus._t = setTimeout(() => (el.status.style.opacity = 0.6), 600);
+      }
 
-    el.menuBtn.onclick = ()=>{ el.sidebar.classList.toggle('open'); };
-    function closeMenu(){ el.sidebar.classList.remove('open') }
+      function persist() {
+        Store.save(state);
+        saveStatus("Saved");
+      }
+      const debounced = (fn, ms) => {
+        let t;
+        return (...a) => {
+          clearTimeout(t);
+          t = setTimeout(() => fn(...a), ms);
+        };
+      };
+      const persistDebounced = debounced(persist, 400);
 
-    renderTabs(); renderEditor();
-
-    if('serviceWorker' in navigator){
-      window.addEventListener('load', ()=>{
-        navigator.serviceWorker.register('./sw.js').catch(console.error);
+      el.title.addEventListener("input", () => {
+        if (!editMode) return;
+        const t = current();
+        t.title = el.title.value;
+        t.mtime = Date.now();
+        saveStatus("Saving…");
+        persistDebounced();
+        renderTabs();
       });
-    }
+      el.content.addEventListener("input", () => {
+        if (!editMode) return;
+        const t = current();
+        t.content = el.content.value;
+        t.mtime = Date.now();
+        saveStatus("Saving…");
+        persistDebounced();
+      });
 
-    let deferredPrompt = null;
-    window.addEventListener('beforeinstallprompt', (e)=>{
-      e.preventDefault();
-      deferredPrompt = e;
-      el.installBtn.style.display = 'inline-flex';
-    });
-    el.installBtn.addEventListener('click', async ()=>{
-      if(!deferredPrompt) return;
-      deferredPrompt.prompt();
-      await deferredPrompt.userChoice;
-      deferredPrompt = null;
-      el.installBtn.style.display = 'none';
-    });
+      function current() {
+        return state.tabs.find((x) => x.id === state.active);
+      }
 
-    function setOnline(v){ document.body.style.outline = v? 'none' : '2px dashed #f59e0b' }
-    addEventListener('online', ()=>setOnline(true));
-    addEventListener('offline', ()=>setOnline(false));
-    setOnline(navigator.onLine);
-  </script>
-</body>
+      el.exportBtn.onclick = () => {
+        const blob = new Blob([JSON.stringify(state, null, 2)], {
+          type: "application/json",
+        });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "quilltabs.qtabs";
+        a.click();
+        URL.revokeObjectURL(a.href);
+      };
+      el.importBtn.onclick = () => el.importInput.click();
+      el.importInput.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const json = JSON.parse(await file.text());
+        if (!json || !Array.isArray(json.tabs)) return alert("Invalid file");
+        state = json;
+        Store.save(state);
+        renderTabs();
+        renderEditor();
+      };
+
+      el.newTabBtn.onclick = () => newTab();
+
+      el.menuBtn.onclick = () => {
+        el.sidebar.classList.toggle("open");
+      };
+      function closeMenu() {
+        el.sidebar.classList.remove("open");
+      }
+
+      renderTabs();
+      renderEditor();
+
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("./sw.js").catch(console.error);
+        });
+      }
+
+      let deferredPrompt = null;
+      window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        el.installBtn.style.display = "inline-flex";
+      });
+      el.installBtn.addEventListener("click", async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        el.installBtn.style.display = "none";
+      });
+
+      function setOnline(v) {
+        document.body.style.outline = v ? "none" : "2px dashed #f59e0b";
+      }
+      addEventListener("online", () => setOnline(true));
+      addEventListener("offline", () => setOnline(false));
+      setOnline(navigator.onLine);
+    </script>
+  </body>
 </html>
