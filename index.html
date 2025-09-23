@@ -27,11 +27,12 @@ FILES INCLUDED IN THIS SINGLE DOCUMENT (copy out to separate files in the same f
 
     <style>
       :root {
-        --bg: #0f172a;
-        --panel: #111827;
-        --muted: #374151;
-        --text: #e5e7eb;
-        --accent: #38bdf8;
+  --bg: #181c20;
+  --panel: #23272b;
+  --muted: #35393e;
+  --text: #e0e3e7;
+  --accent: #6ec6f1;
+  --border: #23272b;
       }
       * {
         box-sizing: border-box;
@@ -42,8 +43,8 @@ FILES INCLUDED IN THIS SINGLE DOCUMENT (copy out to separate files in the same f
       }
       body {
         margin: 0;
-        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
-          Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  font-family: 'Inter', 'Segoe UI', 'Roboto', Arial, sans-serif;
+letter-spacing: 0.01em;
         background: var(--bg);
         color: var(--text);
       }
@@ -179,8 +180,7 @@ FILES INCLUDED IN THIS SINGLE DOCUMENT (copy out to separate files in the same f
         border: none;
         outline: none;
         padding: 16px;
-        font: 16px/1.6 ui-serif, Georgia, Cambria, "Times New Roman", Times,
-          serif;
+        font: 16px/1.6 'Inter', 'Segoe UI', 'Roboto', Arial, sans-serif;
         resize: none;
       }
 
@@ -234,14 +234,11 @@ FILES INCLUDED IN THIS SINGLE DOCUMENT (copy out to separate files in the same f
             style="display: none"
           />
           <button id="importBtn">Import .qtabs</button>
-          <a
-            class="ghost"
-            href="https://"
-            target="_blank"
-            rel="noreferrer"
-            id="helpLink"
-            >Help</a
-          >
+          <!-- ...existing code... -->
+<button id="wordWrapBtn" style="margin-bottom: 4px;">Word Wrap: On</button>
+
+<!-- ...existing code... -->
+
         </div>
       </aside>
 
@@ -433,6 +430,15 @@ FILES INCLUDED IN THIS SINGLE DOCUMENT (copy out to separate files in the same f
         saveStatus("Saved");
       }
 
+      // ...existing code...
+el.content = document.getElementById("content");
+// ...existing code...
+
+// Close sidebar when textarea is focused or clicked (mobile)
+el.content.addEventListener("focus", closeMenu);
+el.content.addEventListener("click", closeMenu);
+// ...existing code...
+
       el.editToggleBtn = document.getElementById("editToggleBtn");
       el.editToggleBtn.onclick = () => {
         editMode = !editMode;
@@ -569,6 +575,22 @@ FILES INCLUDED IN THIS SINGLE DOCUMENT (copy out to separate files in the same f
         deferredPrompt = null;
         el.installBtn.style.display = "none";
       });
+
+      // ...existing code...
+el.wordWrapBtn = document.getElementById("wordWrapBtn");
+
+let wordWrapOn = true;
+el.wordWrapBtn.onclick = () => {
+  wordWrapOn = !wordWrapOn;
+  el.wordWrapBtn.textContent = "Word Wrap: " + (wordWrapOn ? "On" : "Off");
+  el.content.style.whiteSpace = wordWrapOn ? "" : "pre";
+};
+// ...existing code...
+
+// ...existing code...
+el.content.style.whiteSpace = wordWrapOn ? "" : "pre";
+el.wordWrapBtn.textContent = "Word Wrap: " + (wordWrapOn ? "On" : "Off");
+// ...existing code...
 
       function setOnline(v) {
         document.body.style.outline = v ? "none" : "2px dashed #f59e0b";
