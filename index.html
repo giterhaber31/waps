@@ -598,6 +598,30 @@ el.wordWrapBtn.textContent = "Word Wrap: " + (wordWrapOn ? "On" : "Off");
       addEventListener("online", () => setOnline(true));
       addEventListener("offline", () => setOnline(false));
       setOnline(navigator.onLine);
+      // ...existing code...
+
+el.content.addEventListener("click", function (e) {
+  if (editMode) return; // Only in read mode
+  console.log('click copy')
+  // Get caret position
+  const pos = el.content.selectionStart;
+  const value = el.content.value;
+
+  // Find line boundaries
+  const before = value.lastIndexOf('\n', pos - 1) + 1;
+  const after = value.indexOf('\n', pos);
+  const end = after === -1 ? value.length : after;
+  const line = value.slice(before, end).trim();
+
+  if (line) {
+    navigator.clipboard.writeText(line).then(() => {
+      saveStatus("Line copied!");
+    });
+  }
+});
+// ...existing code...
+
+
     </script>
   </body>
 </html>
